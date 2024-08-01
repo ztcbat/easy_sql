@@ -281,7 +281,6 @@ class Step:
         assert self.select_sql is not None
         self.preprocess_select_sql(context)
         if self.target_config.step_type == StepType.ACTION:
-            backend.exec_native_sql(self.select_sql)
             return None
         else:
             return backend.exec_sql(self.select_sql)
@@ -306,6 +305,17 @@ class Step:
 
         if not table:
             return
+
+        if self.target_config.step_type == StepType.ACTION and (
+            not dry_run
+            or (
+                dry_run
+                and "__dry_run_enable_action__" in variables
+                and str(variables["__dry_run_enable_action__"]).lower() in ["true", "1"]
+            )
+        ):
+            assert self.select_sql is not None
+            backend.exec_native_sql(self.select_sql)
 
         if StepType.VARIABLES == self.target_config.step_type and not table.is_empty():
             field_names = table.field_names()
