@@ -303,9 +303,6 @@ class Step:
         assert self.target_config is not None
         variables: dict = context.vars_context.vars
 
-        if not table:
-            return
-
         if self.target_config.step_type == StepType.ACTION and (
             not dry_run
             or (
@@ -316,6 +313,9 @@ class Step:
         ):
             assert self.select_sql is not None
             backend.exec_native_sql(self.select_sql)
+
+        if not table:
+            return
 
         if StepType.VARIABLES == self.target_config.step_type and not table.is_empty():
             field_names = table.field_names()
